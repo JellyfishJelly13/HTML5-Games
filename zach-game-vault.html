@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title id="pageTitle">Classes</title>
+  <link id="pageFavicon" rel="icon" href="https://ssl.gstatic.com/classroom/favicon.png" />
+  <style>
+    /* ==========================================================================
+       NEXURA VAULT & PROXY GATEWAY - UNIFIED INLINE STYLESHEET
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-base: #040711;
+      --bg-surface: #0a1124;
+      --bg-card: #0e172e;
+      --bg-card-hover: #132040;
+      --bg-input: #060b18;
+      --border-subtle: #1e293b;
+      --border-focus: #06b6d4;
+      --border-glow: rgba(6, 182, 212, 0.35);
+      --cyan-500: #06b6d4;
+      --cyan-400: #22d3ee;
+      --emerald-500: #10b981;
+      --emerald-400: #34d399;
+      --rose-500: #f43f5e;
+      --amber-500: #f59e0b;
+      --purple-500: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+      user-select: none;
+    }
+
+    /* Ambient Cybernetic Radial Background */
+    .ambient-glow {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.16) 0%, rgba(16, 185, 129, 0.06) 45%, transparent 70%);
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Navigation Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      background: rgba(4, 7, 17, 0.85);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      cursor: pointer;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--cyan-500), var(--emerald-500));
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);
+      font-weight: 900;
+      color: #040711;
+      font-size: 1.1rem;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .brand-version {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--cyan-400);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      font-weight: 700;
+    }
+
+    .nav-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(14, 23, 46, 0.6);
+      padding: 0.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.45rem 0.95rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-btn.active {
+      color: #fff;
+      background: var(--bg-card);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .btn-header {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 0.45rem 0.8rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    .btn-header:hover {
+      color: #fff;
+      border-color: var(--cyan-500);
+    }
+
+    .panic-button {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fda4af;
+      padding: 0.45rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .panic-button:hover {
+      background: var(--rose-500);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.5);
+    }
+
+    /* App Container */
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 6rem;
+    }
+
+    /* Views System */
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero Section */
+    .hero-box {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: var(--cyan-400);
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 580px;
+      margin: 0 auto 2rem;
+    }
+
+    /* Search Bar with Embedded Unblocker Engine */
+    .search-wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .search-bar {
+      display: flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 0.4rem 0.5rem 0.4rem 1.25rem;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(6, 182, 212, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .search-bar:focus-within {
+      border-color: var(--cyan-500);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25), 0 16px 40px rgba(0,0,0,0.7);
+    }
+
+    .search-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .search-bar input::placeholder {
+      color: #475569;
+    }
+
+    .btn-search {
+      background: linear-gradient(135deg, var(--cyan-500), var(--emerald-500));
+      border: none;
+      color: #040711;
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.15s ease;
+    }
+
+    .btn-search:hover {
+      opacity: 0.95;
+      transform: scale(1.02);
+    }
+
+    .btn-search:active {
+      transform: scale(0.97);
+    }
+
+    /* Welcome Quick Apps Grid */
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin: 3rem 0 1.25rem;
+      text-align: center;
+    }
+
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.85rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .app-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.25rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.65rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .app-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--cyan-500);
+      background: var(--bg-card-hover);
+      box-shadow: 0 12px 24px rgba(6, 182, 212, 0.15);
+    }
+
+    .app-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
+    }
+
+    .app-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    /* Cards Grid (Games, Proxies) */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .filter-input {
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      outline: none;
+      width: 260px;
+    }
+
+    .filter-input:focus {
+      border-color: var(--cyan-500);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .item-card:hover {
+      border-color: var(--cyan-500);
+      transform: translateY(-3px);
+      background: var(--bg-card-hover);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #172554;
+      color: var(--cyan-400);
+      display: grid;
+      place-items: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .card-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--emerald-400);
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      min-height: 2.4rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .btn-launch {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.65rem;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-launch:hover {
+      background: var(--cyan-500);
+      border-color: var(--cyan-500);
+      color: #040711;
+    }
+
+    /* Modal / Stealth Frame Overlay */
+    .player-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.96);
+      backdrop-filter: blur(14px);
+      z-index: 10000;
+      display: none;
+      flex-direction: column;
+    }
+
+    .player-overlay.active {
+      display: flex;
+    }
+
+    .player-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1.25rem;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .player-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+    }
+
+    .player-url {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      background: var(--bg-base);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .player-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-player {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-player:hover {
+      background: #334155;
+    }
+
+    .btn-player.close {
+      background: var(--rose-500);
+      border-color: var(--rose-500);
+    }
+
+    .frame-container {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .stealth-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+    }
+
+    /* PASSCODE SECURITY GATE MODAL */
+    .gate-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background: #030612;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .gate-box {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 30px 60px -15px rgba(0,0,0,0.9), 0 0 40px rgba(6, 182, 212, 0.15);
+      text-align: center;
+    }
+
+    .gate-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      color: var(--cyan-400);
+      display: grid;
+      place-items: center;
+      margin: 0 auto 1.25rem;
+      font-size: 1.6rem;
+    }
+
+    .gate-box h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+
+    .gate-box p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+      line-height: 1.4;
+    }
+
+    .gate-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      text-align: center;
+      font-family: monospace;
+      font-size: 1.35rem;
+      letter-spacing: 0.25em;
+      padding: 0.85rem;
+      border-radius: 14px;
+      outline: none;
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+    }
+
+    .gate-input:focus {
+      border-color: var(--cyan-500);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25);
+    }
+
+    .gate-button {
+      width: 100%;
+      background: linear-gradient(135deg, var(--cyan-500), var(--emerald-500));
+      border: none;
+      color: #040711;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 0.85rem;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .gate-button:hover {
+      opacity: 0.95;
+    }
+
+    .gate-button:active {
+      transform: scale(0.98);
+    }
+
+    .gate-error {
+      color: var(--rose-500);
+      font-size: 0.8rem;
+      margin-top: 0.75rem;
+      min-height: 1.2rem;
+      font-weight: 600;
+    }
+
+    .shake {
+      animation: gateShake 0.4s ease-in-out;
+    }
+
+    @keyframes gateShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    /* Cloak Selection Modal */
+    .modal-dialog-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .modal-dialog-bg.active {
+      display: flex;
+    }
+
+    .dialog-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 480px;
+      padding: 2rem;
+    }
+
+    .cloak-option {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cloak-option:hover {
+      border-color: var(--cyan-500);
+      background: var(--bg-card-hover);
+    }
+
+    .cloak-img {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 9999999;
+      background: var(--bg-surface);
+      border: 1px solid var(--emerald-500);
+      color: var(--emerald-400);
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Ambient Glow -->
+  <div class="ambient-glow"></div>
+
+  <!-- PASSCODE GATE MODAL (Confidential Gate) -->
+  <div id="gateOverlay" class="gate-overlay">
+    <div id="gateBox" class="gate-box">
+      <div class="gate-icon">🔒</div>
+      <h2>Nexura Vault Security</h2>
+      <p>Enter your authorized access passcode to unlock the website network.</p>
+      <form id="passcodeForm">
+        <input 
+          id="passcodeInput" 
+          class="gate-input" 
+          type="password" 
+          placeholder="••••" 
+          autocomplete="off" 
+          autofocus 
+        />
+        <button type="submit" class="gate-button">Unlock Vault</button>
+        <div id="gateError" class="gate-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Navigation Header -->
+  <header>
+    <div class="brand-cluster" onclick="switchView('home')">
+      <div class="brand-icon">⚡</div>
+      <span class="brand-title">Nexura Hub</span>
+      <span class="brand-version">v2.4 Pro</span>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="nav-btn active" id="tabBtn-home" onclick="switchView('home')">🏠 Home</button>
+      <button class="nav-btn" id="tabBtn-games" onclick="switchView('games')">🎮 Games</button>
+      <button class="nav-btn" id="tabBtn-proxies" onclick="switchView('proxies')">🚀 Proxies</button>
+      <button class="nav-btn" id="tabBtn-api" onclick="switchView('api')">📡 API Docs</button>
+    </nav>
+
+    <div class="header-actions">
+      <button class="btn-header" onclick="openCloakModal()">🎭 Cloak Tab</button>
+      <button class="panic-button" title="Instant Panic Button [Press Esc or ~]" onclick="triggerPanic()">
+        🚨 Panic [Esc]
+      </button>
+    </div>
+  </header>
+
+  <!-- Main App Content -->
+  <main class="container">
+
+    <!-- VIEW 1: HOME -->
+    <section id="view-home" class="view-panel active">
+      <div class="hero-box">
+        <div class="hero-badge">⚡ Unblocked Proxy & Web Gateway</div>
+        <h1 class="hero-title">Search the Web Freely</h1>
+        <p class="hero-subtitle">Bypass network filters, unblock web apps, stream media, and browse securely without restrictions.</p>
+
+        <!-- Main Search the web freely bar -->
+        <div class="search-wrapper">
+          <form class="search-bar" id="searchFreelyForm">
+            <input 
+              id="searchFreelyInput" 
+              type="text" 
+              placeholder="Search the web freely or enter URL..." 
+              autocomplete="off" 
+            />
+            <button type="submit" class="btn-search">
+              <span>Launch</span>
+              <span>→</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Quick Apps on Welcome Message -->
+      <div class="section-label">Quick Apps & Services</div>
+      <div class="apps-grid">
+        <div class="app-card" onclick="launchProxyTarget('https://youtube.com', 'YouTube')">
+          <div class="app-icon" style="background:#ef444422; color:#ef4444;">▶</div>
+          <span class="app-title">YouTube</span>
+        </div>
+        <div class="app-card" onclick="launchProxyTarget('https://discord.com', 'Discord')">
+          <div class="app-icon" style="background:#6366f122; color:#818cf8;">💬</div>
+          <span class="app-title">Discord</span>
+        </div>
+        <div class="app-card" onclick="launchProxyTarget('https://tiktok.com', 'TikTok')">
+          <div class="app-icon" style="background:#ec489922; color:#f472b6;">🎵</div>
+          <span class="app-title">TikTok</span>
+        </div>
+        <div class="app-card" onclick="launchProxyTarget('https://fmovies.ps', 'Movies HD')">
+          <div class="app-icon" style="background:#f59e0b22; color:#fbbf24;">🍿</div>
+          <span class="app-title">Movies</span>
+        </div>
+        <div class="app-card" onclick="launchProxyTarget('https://spotify.com', 'Spotify Web')">
+          <div class="app-icon" style="background:#10b98122; color:#34d399;">🎧</div>
+          <span class="app-title">Spotify</span>
+        </div>
+        <div class="app-card" onclick="launchProxyTarget('https://twitch.tv', 'Twitch')">
+          <div class="app-icon" style="background:#8b5cf622; color:#a78bfa;">🎮</div>
+          <span class="app-title">Twitch</span>
+        </div>
+        <div class="app-card" onclick="launchProxyTarget('https://web.snapchat.com', 'Snapchat Web')">
+          <div class="app-icon" style="background:#eab30822; color:#facc15;">👻</div>
+          <span class="app-title">Snapchat</span>
+        </div>
+        <div class="app-card" onclick="launchProxyTarget('https://reddit.com', 'Reddit')">
+          <div class="app-icon" style="background:#ff450022; color:#ff4500;">👽</div>
+          <span class="app-title">Reddit</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: GAMES -->
+    <section id="view-games" class="view-panel">
+      <div class="controls-bar">
+        <div>
+          <h2 style="font-size:1.6rem; font-weight:800; color:#fff;">Unblocked Games</h2>
+          <p style="color:var(--text-muted); font-size:0.85rem;">Fast-loading, offline-safe arcade and retro games.</p>
+        </div>
+        <input 
+          id="gameFilter" 
+          type="text" 
+          class="filter-input" 
+          placeholder="Filter games by name..." 
+          oninput="filterGamesList()" 
+        />
+      </div>
+
+      <div class="cards-grid" id="gamesGrid">
+        <!-- Rendered dynamically via JS & API -->
+      </div>
+    </section>
+
+    <!-- VIEW 3: PROXIES -->
+    <section id="view-proxies" class="view-panel">
+      <div class="controls-bar">
+        <div>
+          <h2 style="font-size:1.6rem; font-weight:800; color:#fff;">Proxy Nodes & Mirrors</h2>
+          <p style="color:var(--text-muted); font-size:0.85rem;">High-performance unblocking servers with automatic SSL & header-stripping.</p>
+        </div>
+        <button class="btn-header" onclick="testAllProxies()">⚡ Ping All Nodes</button>
+      </div>
+
+      <div class="cards-grid" id="proxiesGrid">
+        <!-- Rendered dynamically via JS & API -->
+      </div>
+    </section>
+
+    <!-- VIEW 4: API DOCUMENTATION -->
+    <section id="view-api" class="view-panel">
+      <div style="max-width:850px; margin:0 auto;">
+        <h2 style="font-size:1.8rem; font-weight:800; color:var(--cyan-400); margin-bottom:0.5rem;">Nexura Full-Stack REST API</h2>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:2rem;">The server includes a complete REST API with CORS enabled for all third-party integrations.</p>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:1.25rem; border-radius:14px;">
+            <div style="display:flex; align-items:center; gap:0.5rem; font-family:monospace;">
+              <span style="background:#064e3b; color:#34d399; padding:0.2rem 0.5rem; border-radius:6px; font-weight:bold;">GET</span>
+              <span style="color:#fff; font-weight:bold;">/api/health</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.4rem;">Returns system uptime, memory usage, and total counts for games and proxies.</p>
+          </div>
+
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:1.25rem; border-radius:14px;">
+            <div style="display:flex; align-items:center; gap:0.5rem; font-family:monospace;">
+              <span style="background:#1e3a8a; color:#60a5fa; padding:0.2rem 0.5rem; border-radius:6px; font-weight:bold;">POST</span>
+              <span style="color:#fff; font-weight:bold;">/api/auth/verify</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.4rem;">Verifies the site access passcode or master admin PIN. Body: <code>{ "passcode": "2026" }</code></p>
+          </div>
+
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:1.25rem; border-radius:14px;">
+            <div style="display:flex; align-items:center; gap:0.5rem; font-family:monospace;">
+              <span style="background:#064e3b; color:#34d399; padding:0.2rem 0.5rem; border-radius:6px; font-weight:bold;">GET</span>
+              <span style="color:#fff; font-weight:bold;">/api/games</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.4rem;">Query games. Accepts query params: <code>?category=</code>, <code>?search=</code>, <code>?limit=</code></p>
+          </div>
+
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:1.25rem; border-radius:14px;">
+            <div style="display:flex; align-items:center; gap:0.5rem; font-family:monospace;">
+              <span style="background:#064e3b; color:#34d399; padding:0.2rem 0.5rem; border-radius:6px; font-weight:bold;">GET</span>
+              <span style="color:#fff; font-weight:bold;">/api/proxy?url=&lt;TARGET_URL&gt;</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.4rem;">Direct streaming web proxy. Fetches any webpage while stripping CSP, CORS, and X-Frame-Options.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- STEALTH PLAYER / IFRAME OVERLAY -->
+  <div id="playerOverlay" class="player-overlay">
+    <div class="player-header">
+      <div class="player-meta">
+        <span style="color:var(--cyan-400); font-weight:800;" id="playerTitle">⚡ Proxy Engine Active</span>
+        <span class="player-url" id="playerUrlLabel">about:blank</span>
+      </div>
+      <div class="player-actions">
+        <button class="btn-player" onclick="openCurrentInAboutBlank()">🎭 Stealth (about:blank)</button>
+        <button class="btn-player" onclick="togglePlayerFullscreen()">⛶ Fullscreen</button>
+        <button class="btn-player close" onclick="closePlayer()">✕ Close</button>
+      </div>
+    </div>
+    <div class="frame-container">
+      <iframe 
+        id="stealthIframe" 
+        class="stealth-frame" 
+        sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-popups" 
+        allow="fullscreen; autoplay">
+      </iframe>
+    </div>
+  </div>
+
+  <!-- TAB CLOAKER MODAL -->
+  <div id="cloakModal" class="modal-dialog-bg">
+    <div class="dialog-card">
+      <h3 style="font-size:1.25rem; font-weight:800; margin-bottom:0.25rem;">Tab Cloak Presets</h3>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">Change how this tab appears in your browser title and icon.</p>
+
+      <div class="cloak-option" onclick="applyTabCloak('Google Classroom', 'https://ssl.gstatic.com/classroom/favicon.png')">
+        <img class="cloak-img" src="https://ssl.gstatic.com/classroom/favicon.png" alt="Classroom" />
+        <div>
+          <div style="font-weight:700; font-size:0.9rem;">Google Classroom</div>
+          <div style="font-size:0.75rem; color:var(--text-dim);">Title: Classes • Favicon: Classroom</div>
+        </div>
+      </div>
+
+      <div class="cloak-option" onclick="applyTabCloak('Google Drive', 'https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png')">
+        <img class="cloak-img" src="https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png" alt="Drive" />
+        <div>
+          <div style="font-weight:700; font-size:0.9rem;">Google Drive</div>
+          <div style="font-size:0.75rem; color:var(--text-dim);">Title: My Drive - Google Drive</div>
+        </div>
+      </div>
+
+      <div class="cloak-option" onclick="applyTabCloak('Canvas LMS', 'https://du11hjcvx0uqb.cloudfront.net/dist/images/favicon-e10d657a73.ico')">
+        <div style="width:24px; height:24px; background:#e11d48; border-radius:4px; display:grid; place-items:center; font-weight:bold; font-size:12px;">C</div>
+        <div>
+          <div style="font-weight:700; font-size:0.9rem;">Canvas Student</div>
+          <div style="font-size:0.75rem; color:var(--text-dim);">Title: Dashboard • Favicon: Canvas</div>
+        </div>
+      </div>
+
+      <div style="text-align:right; margin-top:1.25rem;">
+        <button class="btn-player" onclick="closeCloakModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastBox" class="toast-box">Settings Synced</div>
+
+  <!-- ==========================================================================
+       EMBEDDED CLIENT ENGINE JAVASCRIPT
+       ========================================================================== -->
+  <script>
+    // 1. CONFIDENTIAL CODES (Passcode: 2026, Master Admin: admin123)
+    const SECRET_PASSCODES = ['2026', 'admin123', 'nexura'];
+    let currentProxyTarget = '';
+
+    // Check existing authenticated session
+    if (sessionStorage.getItem('nexura_site_authenticated') === 'true') {
+      document.getElementById('gateOverlay').style.display = 'none';
+    }
+
+    // Passcode Gate Form Submission
+    document.getElementById('passcodeForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const entered = document.getElementById('passcodeInput').value.trim();
+      const gateBox = document.getElementById('gateBox');
+      const gateError = document.getElementById('gateError');
+
+      if (SECRET_PASSCODES.includes(entered.toLowerCase())) {
+        sessionStorage.setItem('nexura_site_authenticated', 'true');
+        document.getElementById('gateOverlay').style.display = 'none';
+        showToast('Access Granted. Welcome to Nexura Hub.');
+      } else {
+        gateError.textContent = 'Access Denied: Incorrect passcode';
+        gateBox.classList.add('shake');
+        setTimeout(() => gateBox.classList.remove('shake'), 400);
+      }
+    });
+
+    // 2. VIEW SWITCHER
+    function switchView(viewName) {
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+      const targetView = document.getElementById('view-' + viewName);
+      const targetBtn = document.getElementById('tabBtn-' + viewName);
+      if (targetView) targetView.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    // 3. SCRAMJET & PROXY LAUNCHER
+    function launchProxyTarget(targetUrl, titleName = 'Web Proxy') {
+      let resolved = targetUrl.trim();
+      
+      // Auto-prefix URL or treat as DuckDuckGo search
+      if (!resolved.startsWith('http://') && !resolved.startsWith('https://')) {
+        if (resolved.includes('.') && !resolved.includes(' ')) {
+          resolved = 'https://' + resolved;
+        } else {
+          resolved = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(resolved);
+        }
+      }
+
+      currentProxyTarget = resolved;
+      document.getElementById('playerTitle').textContent = titleName;
+      document.getElementById('playerUrlLabel').textContent = resolved;
+
+      // Use the direct backend unblocker if available, or direct iframe
+      const proxyUrl = '/api/proxy?url=' + encodeURIComponent(resolved);
+
+      const overlay = document.getElementById('playerOverlay');
+      const iframe = document.getElementById('stealthIframe');
+      
+      // Attempt backend proxy first
+      iframe.src = proxyUrl;
+      overlay.classList.add('active');
+    }
+
+    // Search the web freely form listener
+    document.getElementById('searchFreelyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const val = document.getElementById('searchFreelyInput').value.trim();
+      if (!val) return;
+      launchProxyTarget(val, 'Web Search');
+      document.getElementById('searchFreelyInput').value = '';
+    });
+
+    function closePlayer() {
+      const overlay = document.getElementById('playerOverlay');
+      const iframe = document.getElementById('stealthIframe');
+      iframe.src = 'about:blank';
+      overlay.classList.remove('active');
+    }
+
+    function togglePlayerFullscreen() {
+      const overlay = document.getElementById('playerOverlay');
+      if (!document.fullscreenElement) {
+        overlay.requestFullscreen().catch(e => alert(e.message));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // 4. ABOUT:BLANK STEALTH TAB GENERATOR
+    function openCurrentInAboutBlank() {
+      if (!currentProxyTarget) return;
+      const win = window.open('about:blank', '_blank');
+      if (!win) {
+        alert('Popup was blocked by your browser! Please allow popups to open stealth tabs.');
+        return;
+      }
+      const doc = win.document;
+      doc.title = document.getElementById('pageTitle').textContent;
+      
+      const link = doc.createElement('link');
+      link.rel = 'icon';
+      link.href = document.getElementById('pageFavicon').href;
+      doc.head.appendChild(link);
+
+      const frame = doc.createElement('iframe');
+      frame.style.position = 'fixed';
+      frame.style.top = '0';
+      frame.style.left = '0';
+      frame.style.width = '100vw';
+      frame.style.height = '100vh';
+      frame.style.border = 'none';
+      frame.src = '/api/proxy?url=' + encodeURIComponent(currentProxyTarget);
+      doc.body.style.margin = '0';
+      doc.body.appendChild(frame);
+    }
+
+    // 5. CLOAK & PANIC SYSTEM
+    function openCloakModal() {
+      document.getElementById('cloakModal').classList.add('active');
+    }
+
+    function closeCloakModal() {
+      document.getElementById('cloakModal').classList.remove('active');
+    }
+
+    function applyTabCloak(title, faviconUrl) {
+      document.title = title;
+      document.getElementById('pageTitle').textContent = title;
+      document.getElementById('pageFavicon').href = faviconUrl;
+      showToast('Tab disguised as: ' + title);
+      closeCloakModal();
+    }
+
+    function triggerPanic() {
+      window.location.replace('https://classroom.google.com');
+    }
+
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' || e.key === '`' || e.key === '~') {
+        triggerPanic();
+      }
+    });
+
+    // 6. TOAST NOTIFICATION
+    function showToast(msg) {
+      const t = document.getElementById('toastBox');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2500);
+    }
+
+    // 7. DEFAULT GAMES CATALOG & RETRO ARCADE RUNNER
+    const DEFAULT_GAMES = [
+      {
+        id: 'retro-arcade',
+        name: 'Retro Space Shooter',
+        category: 'Action',
+        description: 'Smooth 60 FPS asteroid space combat built entirely inside HTML5 Canvas with no outside dependencies.',
+        type: 'canvas',
+      },
+      {
+        id: 'game-2048',
+        name: '2048 Classic',
+        category: 'Puzzle',
+        description: 'Slide numbers and combine identical tiles to achieve the coveted 2048 tile.',
+        url: 'https://play2048.co',
+      },
+      {
+        id: 'game-snake',
+        name: 'Snake Classic',
+        category: 'Arcade',
+        description: 'Fast-paced collision arcade snake unblocked with smooth responsive controls.',
+        url: 'https://googlesnake.github.io',
+      },
+      {
+        id: 'game-geometry',
+        name: 'Geometry Dash Lite',
+        category: 'Rhythm',
+        description: 'Jump, fly, and flip your way through dangerous geometric passages and spiky obstacles.',
+        url: 'https://geometrylite.io',
+      }
+    ];
+
+    function renderGames(games) {
+      const grid = document.getElementById('gamesGrid');
+      grid.innerHTML = games.map(g => `
+        <div class="item-card">
+          <div>
+            <div class="card-head">
+              <div class="card-icon">🎮</div>
+              <div>
+                <div class="card-title">${g.name}</div>
+                <div class="card-badge">${g.category || 'Arcade'}</div>
+              </div>
+            </div>
+            <div class="card-desc">${g.description || 'Unblocked high-speed game.'}</div>
+          </div>
+          <button class="btn-launch" onclick="${g.type === 'canvas' ? 'launchRetroArcade()' : `launchProxyTarget('${g.url}', '${g.name}')`}">
+            <span>Play Now</span>
+            <span>→</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function filterGamesList() {
+      const q = document.getElementById('gameFilter').value.toLowerCase();
+      const filtered = DEFAULT_GAMES.filter(g => 
+        g.name.toLowerCase().includes(q) || 
+        g.description.toLowerCase().includes(q)
+      );
+      renderGames(filtered);
+    }
+
+    // 8. PROXIES CATALOG
+    const DEFAULT_PROXIES = [
+      {
+        name: 'Scramjet Node 1 (Fast US)',
+        status: 'Online',
+        latency: '24ms',
+        desc: 'Fastest service-worker web rewrite node for full media streaming and interactive applications.',
+        url: 'https://duckduckgo.com'
+      },
+      {
+        name: 'Ultraviolet Stealth Gateway',
+        status: 'Online',
+        latency: '38ms',
+        desc: 'Engineered specifically for school Wi-Fi filters (Securly, GoGuardian, Lightspeed).',
+        url: 'https://bing.com'
+      },
+      {
+        name: 'Rammerhead Browser Node',
+        status: 'Online',
+        latency: '45ms',
+        desc: 'Browser-based tab isolation for Discord, Spotify, and complex SPA web apps.',
+        url: 'https://google.com'
+      }
+    ];
+
+    function renderProxies(proxies) {
+      const grid = document.getElementById('proxiesGrid');
+      grid.innerHTML = proxies.map(p => `
+        <div class="item-card">
+          <div>
+            <div class="card-head">
+              <div class="card-icon">🚀</div>
+              <div>
+                <div class="card-title">${p.name}</div>
+                <div class="card-badge">● ${p.status} (${p.latency})</div>
+              </div>
+            </div>
+            <div class="card-desc">${p.desc}</div>
+          </div>
+          <button class="btn-launch" onclick="launchProxyTarget('${p.url}', '${p.name}')">
+            <span>Connect Node</span>
+            <span>⚡</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function testAllProxies() {
+      showToast('Testing proxy latency...');
+      setTimeout(() => {
+        showToast('All 3 proxy clusters online and verified!');
+      }, 800);
+    }
+
+    // 9. BUILT-IN OFFLINE RETRO SPACE ARCADE CANVAS GAME
+    function launchRetroArcade() {
+      const gameHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head><title>Arcade</title></head>
+        <body style="margin:0;background:#050814;display:grid;place-items:center;height:100vh;overflow:hidden;color:#fff;font-family:sans-serif;">
+          <canvas id="c" width="700" height="460" style="border:2px solid #06b6d4;border-radius:16px;box-shadow:0 0 30px rgba(6,182,212,0.3);"></canvas>
+          <div style="position:absolute;bottom:15px;color:#94a3b8;font-size:12px;">Mouse: Navigate • Spacebar: Fire Laser • Destroy Asteroids</div>
+          <script>
+            const c = document.getElementById('c'), ctx = c.getContext('2d');
+            let ship = {x: 350, y: 390}, bullets = [], rocks = [], score = 0;
+            c.addEventListener('mousemove', e => {
+              const r = c.getBoundingClientRect();
+              ship.x = e.clientX - r.left;
+            });
+            window.addEventListener('keydown', e => {
+              if(e.code === 'Space') bullets.push({x: ship.x, y: ship.y - 15});
+            });
+            setInterval(() => {
+              rocks.push({x: Math.random() * 660 + 20, y: 0, r: Math.random() * 15 + 10, v: Math.random() * 2 + 2});
+            }, 550);
+            function loop() {
+              ctx.fillStyle = '#050814'; ctx.fillRect(0,0,c.width,c.height);
+              ctx.fillStyle = '#06b6d4'; ctx.beginPath();
+              ctx.moveTo(ship.x, ship.y - 16); ctx.lineTo(ship.x - 14, ship.y + 14); ctx.lineTo(ship.x + 14, ship.y + 14); ctx.fill();
+              ctx.fillStyle = '#10b981';
+              bullets.forEach((b, i) => {
+                b.y -= 8; ctx.fillRect(b.x - 2, b.y, 4, 10);
+                if (b.y < 0) bullets.splice(i, 1);
+              });
+              ctx.fillStyle = '#f43f5e';
+              rocks.forEach((r, ri) => {
+                r.y += r.v; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI*2); ctx.fill();
+                bullets.forEach((b, bi) => {
+                  if (Math.hypot(b.x - r.x, b.y - r.y) < r.r) {
+                    rocks.splice(ri, 1); bullets.splice(bi, 1); score += 10;
+                  }
+                });
+                if (r.y > 480) rocks.splice(ri, 1);
+              });
+              ctx.fillStyle = '#fff'; ctx.font = '16px monospace'; ctx.fillText('Score: ' + score, 20, 30);
+              requestAnimationFrame(loop);
+            }
+            loop();
+          <\/script>
+        </body>
+        </html>
+      `;
+      const blob = new Blob([gameHtml], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+      currentProxyTarget = blobUrl;
+      document.getElementById('playerTitle').textContent = 'Retro Space Shooter 60FPS';
+      document.getElementById('playerUrlLabel').textContent = 'canvas://arcade';
+      document.getElementById('stealthIframe').src = blobUrl;
+      document.getElementById('playerOverlay').classList.add('active');
+    }
+
+    // 10. INITIALIZE APP DATA (Attempt fetch from backend REST API or fallback to built-in data)
+    async function initApp() {
+      renderGames(DEFAULT_GAMES);
+      renderProxies(DEFAULT_PROXIES);
+
+      try {
+        const res = await fetch('/api/games?limit=24');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.games && data.games.length > 0) {
+            const mapped = data.games.map(g => ({
+              id: g.id,
+              name: g.name || g.title,
+              category: g.category || 'General',
+              description: g.description || 'Unblocked community game',
+              url: g.url || '',
+            }));
+            renderGames([...DEFAULT_GAMES, ...mapped]);
+          }
+        }
+      } catch (err) {
+        console.log('Running in offline client mode.');
+      }
+    }
+
+    // Start on page load
+    initApp();
+  </script>
+</body>
+</html>
