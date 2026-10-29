@@ -1,0 +1,495 @@
+<!-- Vibe-coded weirdness but sorta works. you can use this if your games not here -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root {
+    --bg: #12141a;
+    --panel: #1b1e27;
+    --border: #2b2f3a;
+    --text: #e6e8ee;
+    --muted: #8b92a5;
+    --accent: #5b8cff;
+    --ok: #4fd18b;
+    --err: #ff6b6b;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    height: 100vh;
+  }
+  #sidebar {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  h1 { font-size: 16px; margin: 0 0 4px; font-weight: 600; }
+  p.hint { color: var(--muted); font-size: 12.5px; line-height: 1.5; margin: 0; }
+  label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  input[type="text"], input[type="file"] {
+    width: 100%;
+    background: #10121a;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 9px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  button:disabled { background: #3a3f4d; color: var(--muted); cursor: not-allowed; }
+  button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+  #status { font-size: 12.5px; color: var(--muted); }
+  #pending { font-size: 12.5px; font-weight: 600; }
+  #log {
+    flex: 1;
+    min-height: 160px;
+    background: #0d0f15;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  #log div.err { color: var(--err); }
+  #log div.ok { color: var(--ok); }
+  #preview {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+  }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div>
+    <h1>HTML Offline Bundler</h1>
+    <p class="hint">Upload an HTML file. It runs live in the preview pane with hooks that intercept resource loading (script/link/img/media src, fetch, XHR, Audio, FontFace). Every discovered and requested resource is fetched and converted to a data URI. When ready, download a self-contained offline copy.</p>
+  </div>
+
+  <div>
+    <label for="fileInput">HTML file</label>
+    <input type="file" id="fileInput" accept=".html,.htm">
+  </div>
+
+  <div>
+    <label for="baseUrlInput">Base URL (optional — needed to resolve relative paths like "styles.css")</label>
+    <input type="text" id="baseUrlInput" placeholder="https://example.com/page.html">
+  </div>
+
+  <div class="row">
+    <button id="loadBtn">Load &amp; Run</button>
+    <button id="downloadBtn" class="secondary" disabled>Download Offline HTML</button>
+  </div>
+  <button id="mapBtn" class="secondary" disabled>Download Resource Map (JSON)</button>
+
+  <div id="status">No file loaded.</div>
+  <div id="pending">Pending fetches: 0</div>
+  <div id="log"></div>
+</div>
+
+<iframe id="preview" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
+
+<script>
+(function () {
+  const fileInput = document.getElementById('fileInput');
+  const baseUrlInput = document.getElementById('baseUrlInput');
+  const loadBtn = document.getElementById('loadBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const mapBtn = document.getElementById('mapBtn');
+  const statusEl = document.getElementById('status');
+  const pendingEl = document.getElementById('pending');
+  const logEl = document.getElementById('log');
+  const iframe = document.getElementById('preview');
+
+  let originalHtml = null;
+  let originalFileName = 'page-offline.html';
+  let baseUrl = '';
+  let pendingCount = 0;
+
+  // absoluteUrl -> { dataUrl, contentType, inlinedCss?, error? }
+  const resourceMap = new Map();
+  window.__resourceMap = resourceMap; // for console inspection
+
+  function log(msg, cls) {
+    const d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = msg;
+    logEl.appendChild(d);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function setPending(delta) {
+    pendingCount += delta;
+    pendingEl.textContent = 'Pending fetches: ' + pendingCount;
+    downloadBtn.disabled = pendingCount > 0 || !originalHtml;
+  }
+
+  function resolveUrl(url, base) {
+    try { return new URL(url, base || undefined).href; }
+    catch (e) { return null; }
+  }
+
+  const CSS_URL_RE = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+
+  async function fetchResource(absUrl) {
+    if (!absUrl || resourceMap.has(absUrl)) return resourceMap.get(absUrl) || null;
+    if (absUrl.startsWith('data:')) {
+      const entry = { dataUrl: absUrl, contentType: (absUrl.slice(5).split(';')[0] || '') };
+      resourceMap.set(absUrl, entry);
+      return entry;
+    }
+    setPending(1);
+    try {
+      const res = await fetch(absUrl, { mode: 'cors', credentials: 'omit' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const blob = await res.blob();
+      const dataUrl = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+      const entry = { dataUrl, contentType: blob.type };
+      resourceMap.set(absUrl, entry);
+      log('Fetched: ' + absUrl + '  (' + (blob.type || 'unknown') + ', ' + blob.size + ' bytes)', 'ok');
+
+      if (blob.type.includes('css') || /\.css(\?|#|$)/i.test(absUrl)) {
+        const cssText = await blob.text();
+        entry.inlinedCss = await inlineCss(cssText, absUrl);
+      }
+      setPending(-1);
+      updateButtons();
+      return entry;
+    } catch (e) {
+      log('FAILED (likely CORS-blocked): ' + absUrl + ' — ' + e.message, 'err');
+      const entry = { dataUrl: null, error: e.message };
+      resourceMap.set(absUrl, entry);
+      setPending(-1);
+      updateButtons();
+      return entry;
+    }
+  }
+
+  async function inlineCss(cssText, cssBaseUrl) {
+    const matches = [...cssText.matchAll(CSS_URL_RE)];
+    let result = cssText;
+    for (const m of matches) {
+      const raw = m[2];
+      if (raw.startsWith('data:')) continue;
+      const abs = resolveUrl(raw, cssBaseUrl);
+      if (!abs) continue;
+      const entry = await fetchResource(abs);
+      if (entry && entry.dataUrl) {
+        result = result.split(m[0]).join('url("' + entry.dataUrl + '")');
+      }
+    }
+    return result;
+  }
+
+  function parseSrcset(srcset) {
+    return srcset.split(',').map(s => s.trim()).filter(Boolean).map(entry => {
+      const parts = entry.split(/\s+/);
+      return { url: parts[0], descriptor: parts.slice(1).join(' ') };
+    });
+  }
+  function buildSrcset(list) {
+    return list.map(p => p.url + (p.descriptor ? ' ' + p.descriptor : '')).join(', ');
+  }
+
+  const RULERS = {
+    SCRIPT: ['src'], LINK: ['href'], IMG: ['src', 'srcset'],
+    SOURCE: ['src', 'srcset'], IFRAME: ['src'], AUDIO: ['src'],
+    VIDEO: ['src', 'poster'], TRACK: ['src']
+  };
+
+  async function scanAndFetchAll(doc, base) {
+    const jobs = [];
+    Object.keys(RULERS).forEach(tag => {
+      doc.querySelectorAll(tag).forEach(el => {
+        RULERS[tag].forEach(attr => {
+          const val = el.getAttribute(attr);
+          if (!val) return;
+          if (attr === 'srcset') {
+            parseSrcset(val).forEach(p => {
+              const abs = resolveUrl(p.url, base);
+              if (abs) jobs.push(fetchResource(abs));
+            });
+          } else {
+            const abs = resolveUrl(val, base);
+            if (abs) jobs.push(fetchResource(abs));
+          }
+        });
+      });
+    });
+    doc.querySelectorAll('style').forEach(styleEl => {
+      jobs.push(inlineCss(styleEl.textContent || '', base));
+    });
+    doc.querySelectorAll('[style]').forEach(el => {
+      const css = el.getAttribute('style') || '';
+      if (css.includes('url(')) jobs.push(inlineCss(css, base));
+    });
+    await Promise.all(jobs);
+  }
+
+  function updateButtons() {
+    const ready = !!originalHtml && pendingCount === 0;
+    downloadBtn.disabled = !ready;
+    mapBtn.disabled = !originalHtml;
+  }
+
+  // ---- Hook script (injected into both the preview iframe and the final download) ----
+  function buildHookScript(mapObj) {
+    const mapJson = JSON.stringify(mapObj);
+    return '(function(){\n' +
+    '  var __MAP__ = ' + mapJson + ';\n' +
+    '  function dataTable(u){\n' +
+    '    try {\n' +
+    '      var abs = new URL(u, document.baseURI).href;\n' +
+    '      if (__MAP__[abs]) return __MAP__[abs];\n' +
+    '    } catch(e){}\n' +
+    '    try { window.parent && window.parent.postMessage({__offlineBundler:true, type:"resource-request", url:u, base: document.baseURI}, "*"); } catch(e){}\n' +
+    '    return null;\n' +
+    '  }\n' +
+    '  var ORIGINAL_CREATE_ELEMENT = document.createElement, ORIGINAL_SET_ATTRIBUTE = Element.prototype.setAttribute;\n' +
+    '  document.createElement = function(t){\n' +
+    '    var e = ORIGINAL_CREATE_ELEMENT.call(this, t);\n' +
+    '    if (String(t).toLowerCase() === "script") {\n' +
+    '      Object.defineProperty(e, "src", {\n' +
+    '        set: function(v){ var mapped = dataTable(v); ORIGINAL_SET_ATTRIBUTE.call(e, "src", mapped || v); },\n' +
+    '        get: function(){ return e.getAttribute("src"); },\n' +
+    '        configurable: true\n' +
+    '      });\n' +
+    '    }\n' +
+    '    return e;\n' +
+    '  };\n' +
+    '  var rulers = {SCRIPT:["src"], LINK:["href"], IMG:["src","srcset"], SOURCE:["src","srcset"], IFRAME:["src"], AUDIO:["src"], VIDEO:["src"], TRACK:["src"]};\n' +
+    '  Element.prototype.setAttribute = function(name, value){\n' +
+    '    try {\n' +
+    '      var tag = this.tagName, attrs = rulers[tag];\n' +
+    '      if (attrs && attrs.indexOf(name) !== -1 && typeof value === "string") {\n' +
+    '        var mapped = dataTable(value);\n' +
+    '        if (mapped) return ORIGINAL_SET_ATTRIBUTE.call(this, name, mapped);\n' +
+    '      }\n' +
+    '    } catch(e){ console.warn("hook setAttribute failed:", e); }\n' +
+    '    return ORIGINAL_SET_ATTRIBUTE.call(this, name, value);\n' +
+    '  };\n' +
+    '  var imgSrcDesc = Object.getOwnPropertyDescriptor(Image.prototype, "src") || Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");\n' +
+    '  Object.defineProperty(Image.prototype, "src", {\n' +
+    '    set: function(v){ imgSrcDesc.set.call(this, dataTable(v) || v); },\n' +
+    '    get: imgSrcDesc.get, configurable:true, enumerable:true\n' +
+    '  });\n' +
+    '  var linkHrefDesc = Object.getOwnPropertyDescriptor(HTMLLinkElement.prototype, "href");\n' +
+    '  Object.defineProperty(HTMLLinkElement.prototype, "href", {\n' +
+    '    set: function(v){ linkHrefDesc.set.call(this, dataTable(v) || v); },\n' +
+    '    get: linkHrefDesc.get, configurable:true, enumerable:true\n' +
+    '  });\n' +
+    '  var mediaSrcDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "src");\n' +
+    '  Object.defineProperty(HTMLMediaElement.prototype, "src", {\n' +
+    '    set: function(v){ mediaSrcDesc.set.call(this, dataTable(v) || v); },\n' +
+    '    get: mediaSrcDesc.get, configurable:true, enumerable:true\n' +
+    '  });\n' +
+    '  var originalFetch = window.fetch;\n' +
+    '  window.fetch = function(input, init){\n' +
+    '    if (typeof input === "string") { input = dataTable(input) || input; }\n' +
+    '    else if (input instanceof Request) { var m = dataTable(input.url); if (m) input = new Request(m, input); }\n' +
+    '    return originalFetch.call(this, input, init);\n' +
+    '  };\n' +
+    '  var originalOpen = XMLHttpRequest.prototype.open;\n' +
+    '  XMLHttpRequest.prototype.open = function(method, url){\n' +
+    '    var rest = Array.prototype.slice.call(arguments, 2);\n' +
+    '    var mapped = dataTable(url) || url;\n' +
+    '    return originalOpen.apply(this, [method, mapped].concat(rest));\n' +
+    '  };\n' +
+    '  var OriginalAudio = window.Audio;\n' +
+    '  window.Audio = function(src){\n' +
+    '    var a = new OriginalAudio();\n' +
+    '    if (src) a.src = dataTable(src) || src;\n' +
+    '    return a;\n' +
+    '  };\n' +
+    '  window.Audio.prototype = OriginalAudio.prototype;\n' +
+    '  if (window.FontFace) {\n' +
+    '    var OriginalFontFace = window.FontFace;\n' +
+    '    window.FontFace = function(family, source, desc){\n' +
+    '      if (typeof source === "string") {\n' +
+    '        source = source.replace(/url\\((\'|"|)(.*?)\\1\\)/g, function(full, q, u){\n' +
+    '          return "url(" + q + (dataTable(u) || u) + q + ")";\n' +
+    '        });\n' +
+    '      }\n' +
+    '      return new OriginalFontFace(family, source, desc);\n' +
+    '    };\n' +
+    '    window.FontFace.prototype = OriginalFontFace.prototype;\n' +
+    '    Object.setPrototypeOf(window.FontFace, OriginalFontFace);\n' +
+    '  }\n' +
+    '})();';
+  }
+
+  function currentMapObj() {
+    const mapObj = {};
+    resourceMap.forEach((v, k) => { if (v.dataUrl) mapObj[k] = v.dataUrl; });
+    return mapObj;
+  }
+
+  function runInIframe(html, base) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    if (base && !doc.querySelector('base')) {
+      const b = doc.createElement('base');
+      b.setAttribute('href', base);
+      doc.head.insertBefore(b, doc.head.firstChild);
+    }
+    const hookScript = doc.createElement('script');
+    hookScript.textContent = buildHookScript(currentMapObj());
+    doc.head.insertBefore(hookScript, doc.head.firstChild);
+
+    const blob = new Blob(['<!DOCTYPE html>' + doc.documentElement.outerHTML], { type: 'text/html' });
+    iframe.src = URL.createObjectURL(blob);
+  }
+
+  // ---- Load & Run ----
+  loadBtn.addEventListener('click', async () => {
+    const file = fileInput.files[0];
+    if (!file) { alert('Choose an HTML file first.'); return; }
+    originalFileName = file.name.replace(/\.html?$/i, '') + '-offline.html';
+    originalHtml = await file.text();
+    baseUrl = baseUrlInput.value.trim();
+
+    resourceMap.clear();
+    logEl.innerHTML = '';
+    setPending(0);
+    statusEl.textContent = 'Scanning "' + file.name + '"...';
+
+    const doc = new DOMParser().parseFromString(originalHtml, 'text/html');
+    const baseTag = doc.querySelector('base[href]');
+    if (!baseUrl && baseTag) {
+      baseUrl = baseTag.getAttribute('href');
+      baseUrlInput.value = baseUrl;
+    }
+
+    log(baseUrl ? ('Base URL: ' + baseUrl) : 'No base URL set — only absolute URLs and data: URIs will resolve.');
+    await scanAndFetchAll(doc, baseUrl);
+    statusEl.textContent = 'Initial scan complete. Preview running — interact with it to catch dynamic requests.';
+    updateButtons();
+
+    runInIframe(originalHtml, baseUrl);
+  });
+
+  // ---- Catch runtime-only requests reported by the hooks ----
+  window.addEventListener('message', (ev) => {
+    const data = ev.data;
+    if (!data || !data.__offlineBundler || data.type !== 'resource-request') return;
+    const abs = resolveUrl(data.url, data.base || baseUrl);
+    if (abs && !resourceMap.has(abs)) {
+      log('Runtime request detected: ' + abs);
+      fetchResource(abs);
+    }
+  });
+
+  // ---- Download offline HTML ----
+  downloadBtn.addEventListener('click', async () => {
+    if (!originalHtml) return;
+    statusEl.textContent = 'Building offline HTML...';
+    const doc = new DOMParser().parseFromString(originalHtml, 'text/html');
+    const base = baseUrl;
+
+    function mappedFor(rawUrl) {
+      const abs = resolveUrl(rawUrl, base);
+      if (!abs) return null;
+      const entry = resourceMap.get(abs);
+      return entry && entry.dataUrl ? entry.dataUrl : null;
+    }
+
+    Object.keys(RULERS).forEach(tag => {
+      doc.querySelectorAll(tag).forEach(el => {
+        RULERS[tag].forEach(attr => {
+          const val = el.getAttribute(attr);
+          if (!val) return;
+          if (attr === 'srcset') {
+            const list = parseSrcset(val).map(p => ({ url: mappedFor(p.url) || p.url, descriptor: p.descriptor }));
+            el.setAttribute('srcset', buildSrcset(list));
+            return;
+          }
+          if (tag === 'LINK' && (el.getAttribute('rel') || '').toLowerCase().includes('stylesheet')) {
+            const abs = resolveUrl(val, base);
+            const entry = abs ? resourceMap.get(abs) : null;
+            if (entry && entry.inlinedCss != null) {
+              const styleEl = doc.createElement('style');
+              styleEl.textContent = entry.inlinedCss;
+              el.replaceWith(styleEl);
+              return;
+            }
+          }
+          const m = mappedFor(val);
+          if (m) el.setAttribute(attr, m);
+        });
+      });
+    });
+
+    for (const styleEl of Array.from(doc.querySelectorAll('style'))) {
+      styleEl.textContent = await inlineCss(styleEl.textContent || '', base);
+    }
+    for (const el of Array.from(doc.querySelectorAll('[style]'))) {
+      const css = el.getAttribute('style');
+      if (css && css.includes('url(')) el.setAttribute('style', await inlineCss(css, base));
+    }
+
+    const hookScript = doc.createElement('script');
+    hookScript.textContent = buildHookScript(currentMapObj());
+    doc.head.insertBefore(hookScript, doc.head.firstChild);
+
+    const finalHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    const blob = new Blob([finalHtml], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = originalFileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    statusEl.textContent = 'Downloaded: ' + originalFileName;
+    log('Downloaded offline file: ' + originalFileName, 'ok');
+  });
+
+  // ---- Download resource map JSON ----
+  mapBtn.addEventListener('click', () => {
+    const out = {};
+    resourceMap.forEach((v, k) => {
+      out[k] = { dataUrl: v.dataUrl || null, contentType: v.contentType || null, error: v.error || null };
+    });
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'resource-map.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+})();
+</script>
+
+</body>
+</html>
